@@ -1,23 +1,16 @@
 use crate::EPSILON;
 
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::cmp::PartialEq;
+use std::ops::*;
 
 #[derive(Debug, Copy, Clone, Default)]
-struct Vector3 {
-    x: f32,
-    y: f32,
-    z: f32,
+pub struct Vector {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
-impl PartialEq for Vector3 {
-    fn eq(&self, other: &Self) -> bool {
-        (self.x - other.x).abs() <= EPSILON
-            && (self.y - other.y).abs() <= EPSILON
-            && (self.z - other.z).abs() <= EPSILON
-    }
-}
-
-impl Add for Vector3 {
+impl Add for Vector {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
@@ -29,7 +22,15 @@ impl Add for Vector3 {
     }
 }
 
-impl Sub for Vector3 {
+impl AddAssign for Vector {
+    fn add_assign(&mut self, other: Self) {
+        self.x += other.x;
+        self.y += other.y;
+        self.z += other.z;
+    }
+}
+
+impl Sub for Vector {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
@@ -41,7 +42,15 @@ impl Sub for Vector3 {
     }
 }
 
-impl Neg for Vector3 {
+impl SubAssign for Vector {
+    fn sub_assign(&mut self, other: Self) {
+        self.x -= other.x;
+        self.y -= other.y;
+        self.z -= other.z;
+    }
+}
+
+impl Neg for Vector {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
@@ -53,7 +62,26 @@ impl Neg for Vector3 {
     }
 }
 
-impl Mul<f32> for Vector3 {
+impl Mul for Vector {
+    type Output = Self;
+    fn mul(self, other: Vector) -> Self::Output {
+        Self {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z,
+        }
+    }
+}
+
+impl MulAssign for Vector {
+    fn mul_assign(&mut self, other: Self) {
+        self.x *= other.x;
+        self.y *= other.y;
+        self.z *= other.z;
+    }
+}
+
+impl Mul<f32> for Vector {
     type Output = Self;
     fn mul(self, other: f32) -> Self::Output {
         Self {
@@ -64,7 +92,34 @@ impl Mul<f32> for Vector3 {
     }
 }
 
-impl Div<f32> for Vector3 {
+impl MulAssign<f32> for Vector {
+    fn mul_assign(&mut self, other: f32) {
+        self.x *= other;
+        self.y *= other;
+        self.z *= other;
+    }
+}
+
+impl Div for Vector {
+    type Output = Self;
+    fn div(self, other: Vector) -> Self::Output {
+        Self {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z,
+        }
+    }
+}
+
+impl DivAssign for Vector {
+    fn div_assign(&mut self, other: Self) {
+        self.x /= other.x;
+        self.y /= other.y;
+        self.z /= other.z;
+    }
+}
+
+impl Div<f32> for Vector {
     type Output = Self;
     fn div(self, other: f32) -> Self::Output {
         Self {
@@ -75,12 +130,32 @@ impl Div<f32> for Vector3 {
     }
 }
 
-impl Vector3 {
-    fn norm(self) -> f32 {
+impl DivAssign<f32> for Vector {
+    fn div_assign(&mut self, other: f32) {
+        self.x /= other;
+        self.y /= other;
+        self.z /= other;
+    }
+}
+
+impl PartialEq for Vector {
+    fn eq(&self, other: &Self) -> bool {
+        (self.x - other.x).abs() <= EPSILON
+            && (self.y - other.y).abs() <= EPSILON
+            && (self.z - other.z).abs() <= EPSILON
+    }
+}
+
+impl Vector {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Self { x, y, z }
+    }
+
+    pub fn norm(self) -> f32 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    fn normalize(self) -> Self {
+    pub fn normalize(self) -> Self {
         let norm = self.norm();
         Self {
             x: self.x / norm,
@@ -89,11 +164,11 @@ impl Vector3 {
         }
     }
 
-    fn dot(self, other: Self) -> f32 {
+    pub fn dot(self, other: Self) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    fn cross(self, other: Self) -> Self {
+    pub fn cross(self, other: Self) -> Self {
         Self {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
@@ -107,8 +182,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_vector3() {
-        let output = Vector3 {
+    fn test_vector() {
+        let output = Vector {
             x: 1.1,
             y: 2.2,
             z: -3.3,
@@ -119,8 +194,8 @@ mod tests {
         assert_eq!(output.z, -3.3);
     }
     #[test]
-    fn test_vector3_eq() {
-        let output = Vector3 {
+    fn test_vector_eq() {
+        let output = Vector {
             x: 0.0,
             y: 2.2,
             z: -3.3,
@@ -129,7 +204,7 @@ mod tests {
         assert_eq!(output, output.clone());
         assert_eq!(
             output,
-            Vector3 {
+            Vector {
                 x: -0.0,
                 y: 2.2,
                 z: -3.3,
@@ -137,7 +212,7 @@ mod tests {
         );
         assert_ne!(
             output,
-            Vector3 {
+            Vector {
                 x: 0.0,
                 y: 2.2,
                 z: 0.0,
@@ -146,19 +221,19 @@ mod tests {
     }
 
     #[test]
-    fn test_vector3_add() {
-        let output = Vector3 {
+    fn test_vector_add() {
+        let output = Vector {
             x: 1.1,
             y: 2.2,
             z: -3.3,
         }
-        .add(Vector3 {
+        .add(Vector {
             x: 2.2,
             y: -1.1,
             z: 3.3,
         });
 
-        let expected = Vector3 {
+        let expected = Vector {
             x: 3.3,
             y: 1.1,
             z: 0.0,
@@ -168,19 +243,19 @@ mod tests {
     }
 
     #[test]
-    fn test_vector3_sub() {
-        let output = Vector3 {
+    fn test_vector_sub() {
+        let output = Vector {
             x: 1.1,
             y: 2.2,
             z: -3.3,
         }
-        .sub(Vector3 {
+        .sub(Vector {
             x: 2.2,
             y: -1.1,
             z: 3.3,
         });
 
-        let expected = Vector3 {
+        let expected = Vector {
             x: -1.1,
             y: 3.3,
             z: -6.6,
@@ -190,14 +265,14 @@ mod tests {
     }
 
     #[test]
-    fn test_vector3_neg() {
-        let output = -Vector3 {
+    fn test_vector_neg() {
+        let output = -Vector {
             x: 1.1,
             y: 2.2,
             z: -3.3,
         };
 
-        let expected = Vector3 {
+        let expected = Vector {
             x: -1.1,
             y: -2.2,
             z: 3.3,
@@ -207,14 +282,14 @@ mod tests {
     }
 
     #[test]
-    fn test_vector3_mul_scalar() {
-        let output = Vector3 {
+    fn test_vector_mul_scalar() {
+        let output = Vector {
             x: 1.1,
             y: 2.2,
             z: -3.3,
         } * 2.0;
 
-        let expected = Vector3 {
+        let expected = Vector {
             x: 2.2,
             y: 4.4,
             z: -6.6,
@@ -224,14 +299,14 @@ mod tests {
     }
 
     #[test]
-    fn test_vector3_div_scalar() {
-        let output = Vector3 {
+    fn test_vector_div_scalar() {
+        let output = Vector {
             x: 1.1,
             y: 2.2,
             z: -3.3,
         } / 2.0;
 
-        let expected = Vector3 {
+        let expected = Vector {
             x: 0.55,
             y: 1.1,
             z: -1.65,
@@ -241,8 +316,8 @@ mod tests {
     }
 
     #[test]
-    fn test_vector3_norm() {
-        let output = Vector3 {
+    fn test_vector_norm() {
+        let output = Vector {
             x: 0.0,
             y: 3.0,
             z: 4.0,
@@ -255,15 +330,15 @@ mod tests {
     }
 
     #[test]
-    fn test_vector3_normalize() {
-        let output = Vector3 {
+    fn test_vector_normalize() {
+        let output = Vector {
             x: 0.0,
             y: 3.0,
             z: 4.0,
         }
         .normalize();
 
-        let expected = Vector3 {
+        let expected = Vector {
             x: 0.0 / 5.0,
             y: 3.0 / 5.0,
             z: 4.0 / 5.0,
@@ -273,13 +348,13 @@ mod tests {
     }
 
     #[test]
-    fn test_vector3_dot() {
-        let output = Vector3 {
+    fn test_vector_dot() {
+        let output = Vector {
             x: 2.0,
             y: 5.0,
             z: -4.0,
         }
-        .dot(Vector3 {
+        .dot(Vector {
             x: 1.1,
             y: 2.2,
             z: 3.3,
@@ -291,19 +366,19 @@ mod tests {
     }
 
     #[test]
-    fn test_vector3_cross() {
-        let output = Vector3 {
+    fn test_vector_cross() {
+        let output = Vector {
             x: 1.0,
             y: 0.0,
             z: 0.0,
         }
-        .cross(Vector3 {
+        .cross(Vector {
             x: 0.0,
             y: 1.0,
             z: 0.0,
         });
 
-        let expected = Vector3 {
+        let expected = Vector {
             x: 0.0,
             y: 0.0,
             z: 1.0,
