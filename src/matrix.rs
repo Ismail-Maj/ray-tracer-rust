@@ -57,7 +57,7 @@ impl PartialEq for Matrix {
 }
 
 impl Matrix {
-    fn new(width: u32, height: u32) -> Self {
+    pub fn new(width: u32, height: u32) -> Self {
         Self {
             width,
             height,
@@ -65,20 +65,7 @@ impl Matrix {
         }
     }
 
-    fn new_identity(width: u32, height: u32) -> Self {
-        if width != height {
-            panic!("Matrix must be square");
-        }
-        let mut result = Self::new(width, height);
-        for i in 0..result.height {
-            for j in 0..result.width {
-                result[(i as usize, j as usize)] = if i == j { 1.0 } else { 0.0 };
-            }
-        }
-        result
-    }
-
-    fn from_buffer(width: u32, height: u32, buffer: Vec<f32>) -> Self {
+    pub fn from_buffer(width: u32, height: u32, buffer: Vec<f32>) -> Self {
         if (width * height) as usize != buffer.len() {
             panic!(
                 "Buffer length must be {} != {}",
@@ -93,7 +80,21 @@ impl Matrix {
         }
     }
 
-    fn transpose(&self) -> Self {
+    pub fn new_identity(size: u32) -> Self {
+        let mut buffer = vec![];
+        for i in 0..size {
+            for j in 0..size {
+                if i == j {
+                    buffer.push(1.0);
+                } else {
+                    buffer.push(0.0);
+                }
+            }
+        }
+        Self::from_buffer(size, size, buffer)
+    }
+
+    pub fn transpose(&self) -> Self {
         let mut result = Self::new(self.height, self.width);
         for i in 0..self.height {
             for j in 0..self.width {
@@ -103,28 +104,24 @@ impl Matrix {
         result
     }
 
-    fn submatrix(&self, row: usize, col: usize) -> Self {
-        let mut result = Self::new(self.width - 1, self.height - 1);
-        for i in 0..self.height {
-            let i = i as usize;
-            for j in 0..self.width {
-                let j = j as usize;
-                if i == row || j == col {
-                    continue;
+    pub fn submatrix(&self, row: usize, col: usize) -> Self {
+        let mut buffer = Vec::with_capacity(((self.width - 1) * (self.height - 1)) as usize);
+        self.buffer
+            .iter()
+            .enumerate()
+            .for_each(|(i, v)| {
+                if i % self.width as usize != col as usize && i / self.width as usize != row as usize {
+                    buffer.push(*v);
                 }
-                let i_ = if i < row { i } else { i - 1 };
-                let j_ = if j < col { j } else { j - 1 };
-                result[(i_ as usize, j_ as usize)] = self[(i as usize, j as usize)];
-            }
-        }
-        result
+            });
+        Self::from_buffer(self.width - 1, self.height - 1, buffer)
     }
 
-    fn minor(&self, row: usize, col: usize) -> f32 {
+    pub fn minor(&self, row: usize, col: usize) -> f32 {
         self.submatrix(row, col).determinant()
     }
 
-    fn cofactor(&self, row: usize, col: usize) -> f32 {
+    pub fn cofactor(&self, row: usize, col: usize) -> f32 {
         let minor = self.minor(row, col);
         if (row + col) % 2 == 0 {
             minor
@@ -133,7 +130,7 @@ impl Matrix {
         }
     }
 
-    fn determinant(&self) -> f32 {
+    pub fn determinant(&self) -> f32 {
         if self.width != self.height {
             panic!("Matrix must be square");
         }
@@ -205,7 +202,7 @@ mod tests {
     }
     #[test]
     fn test_matrix_identity() {
-        let output = Matrix::new_identity(4, 4);
+        let output = Matrix::new_identity(4);
         let expected = Matrix::from_buffer(4, 4, vec![1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.]);
         assert_eq!(output, expected);
     }
