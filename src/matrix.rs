@@ -5,7 +5,7 @@ use std::cmp::PartialEq;
 use std::ops::*;
 
 #[derive(Debug, Clone, Default)]
-struct Matrix {
+pub struct Matrix {
     width: u32,
     height: u32,
     buffer: Vec<f32>,
