@@ -146,6 +146,39 @@ impl PartialEq for Color {
     }
 }
 
+impl Index<usize> for Color {
+    type Output = f32;
+
+    fn index(&self, i: usize) -> &f32 {
+        match i {
+            0 => &self.r,
+            1 => &self.g,
+            2 => &self.b,
+            _ => panic!("Invalid index into color"),
+        }
+    }
+}
+
+impl IndexMut<usize> for Color {
+    fn index_mut(&mut self, i: usize) -> &mut f32 {
+        match i {
+            0 => &mut self.r,
+            1 => &mut self.g,
+            2 => &mut self.b,
+            _ => panic!("Invalid index into color"),
+        }
+    }
+}
+
+impl IntoIterator for Color {
+    type Item = f32;
+    type IntoIter = std::array::IntoIter<f32, 3>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIterator::into_iter([self.r, self.b, self.g])
+    }
+}
+
 impl Color {
     pub fn new(r: f32, g: f32, b: f32) -> Self {
         Self { r, g, b }
