@@ -1,4 +1,4 @@
-use crate::EPSILON;
+use crate::{matrix::Matrix, EPSILON};
 
 use std::cmp::PartialEq;
 use std::ops::*;
@@ -13,6 +13,18 @@ pub struct Vector {
 impl Vector {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
+    }
+
+    pub fn from_matrix(matrix: Matrix) -> Self {
+        Self {
+            x: matrix[(0, 0)],
+            y: matrix[(0, 1)],
+            z: matrix[(0, 2)],
+        }
+    }
+
+    pub fn to_matrix(self) -> Matrix {
+        Matrix::from_vector(self)
     }
 
     pub fn norm(self) -> f32 {
