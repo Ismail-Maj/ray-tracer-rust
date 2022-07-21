@@ -3,6 +3,7 @@ use crate::{point::Point, vector::Vector};
 
 use core::ops::{Index, IndexMut};
 use std::cmp::PartialEq;
+use std::iter;
 use std::ops::*;
 
 #[derive(Debug, Clone, Default)]
@@ -203,7 +204,9 @@ impl Matrix {
 
         let buffer = (0..self.width)
             .flat_map(|i| {
-                (0..self.height).map(move |j| self.cofactor(j as usize, i as usize) / det)
+                iter::repeat(i)
+                    .zip(0..self.height)
+                    .map(|(i, j)| self.cofactor(j as usize, i as usize) / det)
             })
             .collect();
 
