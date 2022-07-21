@@ -10,6 +10,24 @@ pub struct Point {
     pub z: f32,
 }
 
+impl Point {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Self { x, y, z }
+    }
+
+    pub fn norm(self) -> f32 {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    }
+
+    pub fn normalize(self) -> Self {
+        let norm = self.norm();
+        Self {
+            x: self.x / norm,
+            y: self.y / norm,
+            z: self.z / norm,
+        }
+    }
+}
 impl Add for Point {
     type Output = Self;
 
@@ -175,25 +193,6 @@ impl DivAssign<Vector> for Point {
         self.x /= other.x;
         self.y /= other.y;
         self.z /= other.z;
-    }
-}
-
-impl Point {
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
-        Self { x, y, z }
-    }
-
-    pub fn norm(self) -> f32 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
-    }
-
-    pub fn normalize(self) -> Self {
-        let norm = self.norm();
-        Self {
-            x: self.x / norm,
-            y: self.y / norm,
-            z: self.z / norm,
-        }
     }
 }
 
